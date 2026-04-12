@@ -1,5 +1,7 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:khaikhai/pages/login.dart';
+//import 'package:khaikhai/pages/login.dart';
+import 'package:khaikhai/pages/signup.dart';
 //import 'package:khaikhai/pages/bottomnav.dart';
 //import 'package:khaikhai/pages/signup.dart';
 //import 'package:khaikhai/pages/detail_page.dart';
@@ -8,7 +10,9 @@ import 'package:khaikhai/pages/login.dart';
 //import 'package:khaikhai/pages/bottom_nav.dart';
 
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -39,7 +43,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Login()
+      home: Signup()
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:khaikhai/pages/signup.dart';
 import 'package:khaikhai/service/widget_support.dart';
 
 class Login extends StatefulWidget {
@@ -115,13 +116,16 @@ class _LoginState extends State<Login> {
 
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
-                        children: [Text("Forgot password?",
-                      
-                      style: AppWidget.simpleTextFieldStyle(),)
-                      
-                      ]),
+                        children: [
+                          Text(
+                            "Forgot password?",
 
-                      SizedBox(height: 40,),
+                            style: AppWidget.simpleTextFieldStyle(),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: 40),
                       Center(
                         child: Container(
                           width: 200,
@@ -149,7 +153,20 @@ class _LoginState extends State<Login> {
                           ),
                           SizedBox(width: 10),
 
-                          Text("Sign Up", style: AppWidget.boolTextFieldStyle()),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Signup(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              "Sign Up",
+                              style: AppWidget.boolTextFieldStyle(),
+                            ),
+                          ),
                         ],
                       ),
                     ],
