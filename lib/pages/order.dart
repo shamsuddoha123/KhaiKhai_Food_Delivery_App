@@ -129,7 +129,22 @@ class _OrderState extends State<Order> {
                                     color: Colors.redAccent,
                                     fontSize: 20.0,
                                     fontWeight: FontWeight.bold),
-                              )
+                              ),
+                              if (ds["Status"] != "Delivered" && ds["Status"] != "Cancelled")
+                                GestureDetector(
+                                  onTap: () {
+                                    _showCancelDialog(ds.id);
+                                  },
+                                  child: Container(
+                                    margin: EdgeInsets.only(top: 10),
+                                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.redAccent),
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Text("Cancel Order", style: TextStyle(color: Colors.redAccent, fontSize: 12)),
+                                  ),
+                                ),
                             ],
                           )
                         ],
@@ -139,6 +154,33 @@ class _OrderState extends State<Order> {
                 );
               });
         });
+  }
+
+  Future<void> _showCancelDialog(String orderId) async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Cancel Order"),
+        content: const Text("Are you sure you want to cancel this order? This action cannot be undone."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("No")),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              if (id != null) {
+                await DatabaseMethods().cancelOrder(id!, orderId);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Order cancelled successfully")),
+                  );
+                }
+              }
+            },
+            child: const Text("Yes, Cancel", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

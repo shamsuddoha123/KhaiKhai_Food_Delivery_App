@@ -202,7 +202,7 @@ class _HomeState extends State<Home> {
       physics: NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.63,
+        childAspectRatio: 0.65, // Adjusted for better fit
         mainAxisSpacing: 20.0,
         crossAxisSpacing: 15.0,
       ),
@@ -229,46 +229,46 @@ class _HomeState extends State<Home> {
         );
       },
       child: Container(
-        padding: EdgeInsets.only(left: 10.0, top: 10.0),
+        padding: EdgeInsets.all(10.0),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.black38),
+          border: Border.all(color: Colors.black12),
           borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Image.asset(
-                image,
-                height: 120,
-                width: 120,
-                fit: BoxFit.contain,
+            Expanded(
+              child: Center(
+                child: Image.asset(
+                  image,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
-            SizedBox(height: 5),
+            SizedBox(height: 8),
             Text(name,
-                style: AppWidget.boolTextFieldStyle(),
+                style: AppWidget.boolTextFieldStyle().copyWith(fontSize: 16),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis),
             Text(price, style: AppWidget.priceTextFieldStyle()),
-            Spacer(),
+            SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Container(
-                  height: 50,
-                  width: 80,
+                  padding: EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: Color(0xffef2b39),
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      bottomRight: Radius.circular(20),
+                      topLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(15),
                     ),
                   ),
                   child: Icon(
                     Icons.arrow_forward,
                     color: Colors.white,
-                    size: 30.0,
+                    size: 20.0,
                   ),
                 ),
               ],

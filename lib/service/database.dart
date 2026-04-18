@@ -139,9 +139,22 @@ class DatabaseMethods {
   Future deleteOrder(String orderId) async {
     // 1. Delete Global Order
     await FirebaseFirestore.instance.collection("Orders").doc(orderId).delete();
-    
-    // Note: Deleting from user's personal collection is harder if we don't have the userId.
-    // However, for typical cleanup, deleting the global order is the primary task.
+  }
+
+  Future cancelOrder(String userId, String orderId) async {
+    // 1. Update Global Order Status
+    await FirebaseFirestore.instance
+        .collection("Orders")
+        .doc(orderId)
+        .update({"Status": "Cancelled"});
+
+    // 2. Update User's Personal Order Status
+    return await FirebaseFirestore.instance
+        .collection("users")
+        .doc(userId)
+        .collection("Orders")
+        .doc(orderId)
+        .update({"Status": "Cancelled"});
   }
 
   Future deleteAllUsers() async {
@@ -175,5 +188,25 @@ class DatabaseMethods {
         .collection("Transactions")
         .orderBy("Date", descending: true)
         .snapshots();
+  }
+
+  Future deleteTransaction(String userId, String transactionId) async {
+    return await FirebaseFirestore.instance
+        .collection("users")
+        .doc(userId)
+        .collection("Transactions")
+        .doc(transactionId)
+        .delete();
+  }
+
+  Future deleteAllTransactions(String userId) async {
+    var collection = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('Transactions');
+    var snapshots = await collection.get();
+    for (var doc in snapshots.docs) {
+      await doc.reference.delete();
+    }
   }
 }

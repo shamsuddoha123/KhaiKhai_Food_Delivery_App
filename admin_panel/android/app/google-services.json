@@ -12,7 +12,20 @@
           "package_name": "com.example.khaikhai"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "235933559980-4h971uflb698dfiiu9h5kbkmspph8qu2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.khaikhai",
+            "certificate_hash": "dcd97c2597c2c9951f87f256a4f992e62fd76169"
+          }
+        },
+        {
+          "client_id": "235933559980-7tslmsd5tqvuuun1prk7n8mkiggguu97.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC_fkMpFGuDdWHYNj2bPVdD6_5ayNEESCk"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "235933559980-7tslmsd5tqvuuun1prk7n8mkiggguu97.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "235933559980-3j9epjkmdsjv3bo8av56is9bok66iqgc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.khaikhai"
+              }
+            }
+          ]
         }
       }
     },
@@ -31,7 +56,20 @@
           "package_name": "com.example.khaikhai_admin"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "235933559980-hh8mhfge7ium58iu08erh4mmgskm9pt1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.khaikhai_admin",
+            "certificate_hash": "dcd97c2597c2c9951f87f256a4f992e62fd76169"
+          }
+        },
+        {
+          "client_id": "235933559980-7tslmsd5tqvuuun1prk7n8mkiggguu97.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC_fkMpFGuDdWHYNj2bPVdD6_5ayNEESCk"
@@ -39,7 +77,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "235933559980-7tslmsd5tqvuuun1prk7n8mkiggguu97.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "235933559980-3j9epjkmdsjv3bo8av56is9bok66iqgc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.khaikhai"
+              }
+            }
+          ]
         }
       }
     }

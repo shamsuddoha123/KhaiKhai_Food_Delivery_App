@@ -218,10 +218,20 @@ class _WalletState extends State<Wallet> {
                   ),
                   SizedBox(height: 30.0),
                   Padding(
-                    padding: const EdgeInsets.only(left: 20.0),
-                    child: Text(
-                      "Your Transactions",
-                      style: AppWidget.boolTextFieldStyle(),
+                    padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Your Transactions",
+                          style: AppWidget.boolTextFieldStyle(),
+                        ),
+                        if (transactionStream != null)
+                          TextButton(
+                            onPressed: () => _showClearAllDialog(),
+                            child: const Text("Clear All", style: TextStyle(color: Colors.redAccent)),
+                          ),
+                      ],
                     ),
                   ),
                   SizedBox(height: 10.0),
@@ -263,7 +273,6 @@ class _WalletState extends State<Wallet> {
                       color: Color(0xFFF2F2F2),
                       borderRadius: BorderRadius.circular(10)),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         formattedDate,
@@ -289,12 +298,55 @@ class _WalletState extends State<Wallet> {
                             )
                           ],
                         ),
+                      ),
+                      SizedBox(width: 10),
+                      IconButton(
+                        icon: Icon(Icons.delete_outline, color: Colors.grey, size: 20),
+                        onPressed: () => _deleteTransaction(ds.id),
                       )
                     ],
                   ),
                 );
               });
         });
+  }
+
+  Future<void> _deleteTransaction(String transId) async {
+    if (id != null) {
+      await DatabaseMethods().deleteTransaction(id!, transId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Transaction removed")),
+        );
+      }
+    }
+  }
+
+  Future<void> _showClearAllDialog() async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Clear History"),
+        content: const Text("Are you sure you want to remove all transactions?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              if (id != null) {
+                await DatabaseMethods().deleteAllTransactions(id!);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("All transactions cleared")),
+                  );
+                }
+              }
+            },
+            child: const Text("Clear All", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   String _getMonth(int month) {

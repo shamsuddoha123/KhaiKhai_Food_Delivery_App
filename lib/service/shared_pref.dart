@@ -6,6 +6,19 @@ class SharedPreferenceHelper {
   static String userEmailKey = "USEREMAILKEY";
   static String userWalletKey = "USERWALLETKEY";
   static String userImageKey = "USERIMAGEKEY";
+  static String biometricEnabledKey = "BIOMETRICENABLED";
+
+  // Save Biometric Status
+  Future<bool> saveBiometricEnabled(bool isEnabled) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setBool(biometricEnabledKey, isEnabled);
+  }
+
+  // Get Biometric Status
+  Future<bool> getBiometricEnabled() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(biometricEnabledKey) ?? false;
+  }
 
   // Save User ID
   Future<bool> saveUserId(String getUserId) async {

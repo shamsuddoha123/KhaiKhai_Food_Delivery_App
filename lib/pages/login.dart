@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:khaikhai/pages/bottomnav.dart';
 import 'package:khaikhai/pages/signup.dart';
+import 'package:khaikhai/service/auth.dart';
+import 'package:khaikhai/service/biometric_helper.dart';
 import 'package:khaikhai/service/database.dart';
 import 'package:khaikhai/service/shared_pref.dart';
 import 'package:khaikhai/service/widget_support.dart';
@@ -19,11 +21,32 @@ class _LoginState extends State<Login> {
   TextEditingController mailcontroller = TextEditingController();
 
   bool _isLoading = false;
+  bool _biometricAvailable = false;
 
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometrics();
+  }
+
+  Future<void> _checkBiometrics() async {
+    _biometricAvailable = await BiometricHelper().hasEnrolledBiometrics();
+    bool isEnabled = await SharedPreferenceHelper().getBiometricEnabled();
+    if (isEnabled && _biometricAvailable) {
+      bool authenticated = await BiometricHelper().authenticate();
+      if (authenticated) {
+        // If already authenticated by fingerprint, and a user is logged in, go to home
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user != null && mounted) {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Bottomnav()));
+        }
+      }
+    }
+  }
   Future<void> userLogin() async {
     setState(() {
       _isLoading = true;
@@ -63,11 +86,7 @@ class _LoginState extends State<Login> {
       }
 
       if (!mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Bottomnav()),
-      );
+      await _handlePostLogin(context);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
 
@@ -114,12 +133,87 @@ class _LoginState extends State<Login> {
     }
   }
 
+  Future<void> googleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      User? user = await AuthMethods().signInWithGoogle();
+      if (user != null) {
+        DocumentSnapshot userSnapshot = await DatabaseMethods().getUserData(user.uid);
+        if (userSnapshot.exists) {
+          Map<String, dynamic> data = userSnapshot.data() as Map<String, dynamic>;
+          await SharedPreferenceHelper().saveUserEmail(data["Email"] ?? user.email ?? "");
+          await SharedPreferenceHelper().saveUserName(data["Name"] ?? user.displayName ?? "User");
+          await SharedPreferenceHelper().saveUserId(data["Id"] ?? user.uid);
+          await SharedPreferenceHelper().saveUserWallet(data["Wallet"] ?? "0");
+        } else {
+          Map<String, dynamic> userInfoMap = {
+            'Name': user.displayName ?? user.email!.split('@')[0],
+            'Email': user.email,
+            'Id': user.uid,
+            'Wallet': '0',
+          };
+          await DatabaseMethods().addUserDetails(userInfoMap, user.uid);
+          await SharedPreferenceHelper().saveUserEmail(user.email ?? "");
+          await SharedPreferenceHelper().saveUserId(user.uid);
+          await SharedPreferenceHelper().saveUserName(user.displayName ?? user.email!.split('@')[0]);
+          await SharedPreferenceHelper().saveUserWallet("0");
+        }
+
+        if (!mounted) return;
+        await _handlePostLogin(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Google Sign-In failed: $e")));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showForgotPasswordDialog() {
+    TextEditingController resetEmailController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Reset Password"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("Enter your email address and we'll send you a link to reset your password."),
+            const SizedBox(height: 20),
+            TextField(
+              controller: resetEmailController,
+              decoration: const InputDecoration(hintText: "Email", border: OutlineInputBorder()),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () async {
+              if (resetEmailController.text.isNotEmpty) {
+                await AuthMethods().resetPassword(resetEmailController.text.trim());
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Password reset email sent!")));
+              }
+            },
+            child: const Text("Send Link"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
+        child: Container(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height,
+          ),
           child: Stack(
             children: [
               Container(
@@ -218,9 +312,14 @@ class _LoginState extends State<Login> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Text(
-                              "Forgot password?",
-                              style: AppWidget.simpleTextFieldStyle(),
+                            GestureDetector(
+                              onTap: () {
+                                _showForgotPasswordDialog();
+                              },
+                              child: Text(
+                                "Forgot password?",
+                                style: AppWidget.simpleTextFieldStyle(),
+                              ),
                             ),
                           ],
                         ),
@@ -280,6 +379,25 @@ class _LoginState extends State<Login> {
                             ),
                           ),
                         ),
+                        SizedBox(height: 20),
+                        Center(
+                          child: Text(
+                            "or Log In with",
+                            style: AppWidget.simpleTextFieldStyle(),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Center(
+                          child: GestureDetector(
+                            onTap: _isLoading ? null : googleLogin,
+                            child: Image.asset(
+                              "images/google.png",
+                              height: 50,
+                              width: 50,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
                         SizedBox(height: 30.0),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -316,5 +434,44 @@ class _LoginState extends State<Login> {
         ),
       ),
     );
+  }
+
+  Future<void> _handlePostLogin(BuildContext context) async {
+    bool isEnabled = await SharedPreferenceHelper().getBiometricEnabled();
+    if (!isEnabled && _biometricAvailable) {
+      if (!context.mounted) return;
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Enable Fingerprint?"),
+          content: const Text("Would you like to enable fingerprint login for faster access next time?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                if (context.mounted) {
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Bottomnav()));
+                }
+              },
+              child: const Text("Later"),
+            ),
+            TextButton(
+              onPressed: () async {
+                await SharedPreferenceHelper().saveBiometricEnabled(true);
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Bottomnav()));
+                }
+              },
+              child: const Text("Enable"),
+            ),
+          ],
+        ),
+      );
+    } else {
+      if (context.mounted) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Bottomnav()));
+      }
+    }
   }
 }
