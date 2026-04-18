@@ -145,10 +145,14 @@ class _AdminOrdersState extends State<AdminOrders> {
                                               color: Colors.redAccent,
                                             ),
                                             SizedBox(width: 5.0),
-                                            Text(
-                                              data["Name"] ?? "User",
-                                              style: AppWidget
-                                                  .simpleTextFieldStyle(),
+                                            Expanded(
+                                              child: Text(
+                                                data["Name"] ?? "User",
+                                                style: AppWidget
+                                                    .simpleTextFieldStyle(),
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                              ),
                                             ),
                                           ],
                                         ),
