@@ -25,49 +25,77 @@ class _HomeState extends State<Home> {
   List<BurgerModel> burger = [];
   List<ChineseModel> chinese = [];
   List<MexicanModel> mexican = [];
+  List<dynamic> allFoodItems = [];
+  List<dynamic> filteredItems = [];
   String track = "0";
+  TextEditingController searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
+    super.initState();
     categories = getCategories();
     pizza = getPizza();
     burger = getBurger();
     chinese = getChinese();
     mexican = getMexican();
-    super.initState();
+    
+    // Combine all items for searching
+    allFoodItems.addAll(pizza);
+    allFoodItems.addAll(burger);
+    allFoodItems.addAll(chinese);
+    allFoodItems.addAll(mexican);
+    
+    filteredItems = [];
+  }
+
+  void onSearchTextChanged(String text) {
+    setState(() {
+      if (text.isEmpty) {
+        filteredItems = [];
+      } else {
+        filteredItems = allFoodItems
+            .where((item) =>
+                item.name!.toLowerCase().contains(text.toLowerCase()))
+            .toList();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        margin: EdgeInsets.only(left: 20.0, top: 40.0),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Image.asset(
-                      "images/logo.png",
-                      height: 50,
-                      width: 110,
-                      fit: BoxFit.contain,
-                    ),
-
-                    Text(
-                      "Order your favourite food!",
-                      style: AppWidget.simpleTextFieldStyle(),
-                    ),
-                  ],
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.only(right: 20.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadiusGeometry.circular(10),
+      body: SingleChildScrollView(
+        child: Container(
+          margin: EdgeInsets.only(left: 20.0, top: 40.0, right: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Image.asset(
+                        "images/logo.png",
+                        height: 50,
+                        width: 110,
+                        fit: BoxFit.contain,
+                      ),
+                      Text(
+                        "Order your favourite food!",
+                        style: AppWidget.simpleTextFieldStyle(),
+                      ),
+                    ],
+                  ),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
                     child: Image.asset(
                       "images/boy.jpg",
                       height: 60,
@@ -75,192 +103,159 @@ class _HomeState extends State<Home> {
                       fit: BoxFit.cover,
                     ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 30.0),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.only(right: 20.0, left: 10.0),
+                ],
+              ),
+              SizedBox(height: 30.0),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.only(right: 10.0),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFececf8),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: TextField(
+                        controller: searchController,
+                        onChanged: onSearchTextChanged,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "Search food item...",
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 15.0),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Color(0xFFececf8),
+                      color: Color(0xffef2b39),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Search food item...",
-                      ),
-                    ),
+                    child:
+                        Icon(Icons.search, color: Colors.white, size: 30.0),
                   ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(right: 10.0),
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Color(0xffef2b39),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(Icons.search, color: Colors.white, size: 30.0),
-                ),
-              ],
-            ),
-            SizedBox(height: 20.0),
-
-            SizedBox(
-              height: 70,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: categories.length,
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) {
-                  return categoryTile(
-                    categories[index].name!,
-                    categories[index].image!,
-                    index.toString(),
-                  );
-                },
+                ],
               ),
-            ),
-            SizedBox(height: 10.0),
-            track == "0"
-                ? Expanded(
-                    child: Container(
-                      margin: EdgeInsets.only(right: 10.0),
-                      child: GridView.builder(
-                        padding: EdgeInsets.zero,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.69,
-                          mainAxisSpacing: 20.0,
-                          crossAxisSpacing: 15.0,
-                        ),
-                        itemCount: pizza.length,
-                        itemBuilder: (context, index) {
-                          return foodTile(
-                            pizza[index].name!,
-                            pizza[index].image!,
-                            pizza[index].price!,
-                          );
-                        },
-                      ),
-                    ),
-                  )
-                : track == "1"
-                ? Expanded(
-                    child: Container(
-                      margin: EdgeInsets.only(right: 10.0),
-                      child: GridView.builder(
-                        padding: EdgeInsets.zero,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.69,
-                          mainAxisSpacing: 20.0,
-                          crossAxisSpacing: 15.0,
-                        ),
-                        itemCount: burger.length,
-                        itemBuilder: (context, index) {
-                          return foodTile(
-                            burger[index].name!,
-                            burger[index].image!,
-                            burger[index].price!,
-                          );
-                        },
-                      ),
-                    ),
-                  )
-                : track == "2"
-                ? Expanded(
-                    child: Container(
-                      margin: EdgeInsets.only(right: 10.0),
-                      child: GridView.builder(
-                        padding: EdgeInsets.zero,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.69,
-                          mainAxisSpacing: 20.0,
-                          crossAxisSpacing: 15.0,
-                        ),
-                        itemCount: chinese.length,
-                        itemBuilder: (context, index) {
-                          return foodTile(
-                            chinese[index].name!,
-                            chinese[index].image!,
-                            chinese[index].price!,
-                          );
-                        },
-                      ),
-                    ),
-                  )
-                : track == "3"
-                ? Expanded(
-                    child: Container(
-                      margin: EdgeInsets.only(right: 10.0),
-                      child: GridView.builder(
-                        padding: EdgeInsets.zero,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.69,
-                          mainAxisSpacing: 20.0,
-                          crossAxisSpacing: 15.0,
-                        ),
-                        itemCount: mexican.length,
-                        itemBuilder: (context, index) {
-                          return foodTile(
-                            mexican[index].name!,
-                            mexican[index].image!,
-                            mexican[index].price!,
-                          );
-                        },
-                      ),
-                    ),
-                  )
-                : Container(),
-          ],
+              SizedBox(height: 20.0),
+              if (searchController.text.isEmpty)
+                SizedBox(
+                  height: 70,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: categories.length,
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) {
+                      return categoryTile(
+                        categories[index].name!,
+                        categories[index].image!,
+                        index.toString(),
+                      );
+                    },
+                  ),
+                ),
+              SizedBox(height: 10.0),
+              _buildFoodGrid(),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget foodTile(String name, String image, String price) {
-    return Container(
-      margin: EdgeInsets.only(right: 20.0),
-      padding: EdgeInsets.only(left: 10.0, top: 10.0),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black38),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Image.asset(
-              image,
-              height: 150,
-              width: 150,
-              fit: BoxFit.contain,
-            ),
-          ),
-          Text(name, style: AppWidget.boolTextFieldStyle()),
-          Text(price, style: AppWidget.priceTextFieldStyle()),
-          Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+  Widget _buildFoodGrid() {
+    List<dynamic> items;
+    if (searchController.text.isNotEmpty) {
+      items = filteredItems;
+      if (items.isEmpty) {
+        return Center(
+          child: Column(
             children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          DetailPage(image: image, name: name, price: price),
-                    ),
-                  );
-                },
-                child: Container(
+              SizedBox(height: 50),
+              Icon(Icons.search_off, size: 60, color: Colors.grey),
+              SizedBox(height: 10),
+              Text("No food items found matching \"${searchController.text}\"",
+                  style: AppWidget.simpleTextFieldStyle()),
+            ],
+          ),
+        );
+      }
+    } else {
+      if (track == "0") {
+        items = pizza;
+      } else if (track == "1") {
+        items = burger;
+      } else if (track == "2") {
+        items = chinese;
+      } else if (track == "3") {
+        items = mexican;
+      } else {
+        return Container();
+      }
+    }
+
+    return GridView.builder(
+      padding: EdgeInsets.only(bottom: 100.0), // Add padding to avoid overlap with bottom nav
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.63,
+        mainAxisSpacing: 20.0,
+        crossAxisSpacing: 15.0,
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        return foodTile(
+          items[index].name!,
+          items[index].image!,
+          items[index].price!,
+        );
+      },
+    );
+  }
+
+  Widget foodTile(String name, String image, String price) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                DetailPage(image: image, name: name, price: price),
+          ),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.only(left: 10.0, top: 10.0),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black38),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Image.asset(
+                image,
+                height: 120,
+                width: 120,
+                fit: BoxFit.contain,
+              ),
+            ),
+            SizedBox(height: 5),
+            Text(name,
+                style: AppWidget.boolTextFieldStyle(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+            Text(price, style: AppWidget.priceTextFieldStyle()),
+            Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
                   height: 50,
                   width: 80,
                   decoration: BoxDecoration(
@@ -276,10 +271,10 @@ class _HomeState extends State<Home> {
                     size: 30.0,
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -287,23 +282,23 @@ class _HomeState extends State<Home> {
   Widget categoryTile(String name, String image, String categoryindex) {
     return GestureDetector(
       onTap: () {
-        track = categoryindex.toString(); // Handle category selection
+        track = categoryindex.toString();
         setState(() {});
       },
       child: track == categoryindex
           ? Container(
               margin: EdgeInsets.only(right: 20.0, bottom: 10.0),
               child: Material(
-                elevation: 20.0,
+                elevation: 5.0,
                 borderRadius: BorderRadius.circular(30),
                 child: Container(
-                  padding: EdgeInsets.only(left: 20.0, right: 20.0),
-                  margin: EdgeInsets.only(right: 20.0),
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
                   decoration: BoxDecoration(
                     color: Color(0xffef2b39),
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Image.asset(
                         image,
@@ -319,15 +314,17 @@ class _HomeState extends State<Home> {
               ),
             )
           : Container(
-              padding: EdgeInsets.only(left: 20.0, right: 20.0),
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
               margin: EdgeInsets.only(right: 20.0, bottom: 10.0),
               decoration: BoxDecoration(
                 color: Color(0xFFececf8),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Image.asset(image, height: 40, width: 40, fit: BoxFit.cover),
+                  Image.asset(image,
+                      height: 40, width: 40, fit: BoxFit.cover),
                   SizedBox(width: 10.0),
                   Text(name, style: AppWidget.simpleTextFieldStyle()),
                 ],
